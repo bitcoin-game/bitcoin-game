@@ -10,7 +10,16 @@ export const SKIN_VISUALS = {
     gly: '₿',
     gl: 'rgba(247,147,26,.55)',
   },
-  neon: {
+  green: {
+    rar: 'COMUM',
+    rc: 'var(--green)',
+    bg: 'radial-gradient(circle at 38% 32%,#aef5b8,#35d24a 60%,#1c7a2c)',
+    bd: '#cff7d6',
+    col: '#06340f',
+    gly: '₿',
+    gl: 'rgba(53,210,74,.55)',
+  },
+  cyber: {
     rar: 'RARO',
     rc: 'var(--blue)',
     bg: 'radial-gradient(circle at 38% 32%,#bfe9fb,#2ea9e0 60%,#11597e)',
@@ -19,23 +28,14 @@ export const SKIN_VISUALS = {
     gly: '₿',
     gl: 'rgba(46,169,224,.6)',
   },
-  goldbar: {
-    rar: 'ÉPICO',
-    rc: 'var(--amber)',
-    bg: 'radial-gradient(circle at 38% 32%,#fff3b0,#ffc233 55%,#a06a00)',
-    bd: '#fff3b0',
-    col: '#3a2700',
-    gly: '▮',
-    gl: 'rgba(255,194,51,.6)',
-  },
-  recruiter: {
-    rar: 'INDICAÇÃO',
+  crt: {
+    rar: 'RARO',
     rc: 'var(--green)',
-    bg: 'radial-gradient(circle at 38% 32%,#aef5b8,#35d24a 60%,#1c7a2c)',
-    bd: '#cff7d6',
-    col: '#06340f',
-    gly: 'P2',
-    gl: 'rgba(53,210,74,.55)',
+    bg: 'radial-gradient(circle at 38% 32%,#1c3a22,#0b1d10 70%)',
+    bd: '#35d24a',
+    col: '#d6ffdf',
+    gly: '8',
+    gl: 'rgba(53,210,74,.7)',
   },
   legend: {
     rar: 'LENDA',

@@ -77,26 +77,14 @@ export function statsFromLevels({ multN, battN, chgN, autoN }) {
 }
 
 // ---------- Skins ----------
-// Skins compráveis com moedas + skins exclusivas desbloqueadas por indicação.
+// Catálogo do protótipo (bitcoin-game-prototype.html) — front e back leem
+// desta mesma lista, então preço e posse vêm sempre do servidor.
 export const SKINS = {
   classic: { id: 'classic', label: 'Classic', cost: 0, unlock: 'default' },
-  neon: { id: 'neon', label: 'Neon Arcade', cost: 5000, unlock: 'coins' },
-  goldbar: { id: 'goldbar', label: 'Gold Bar', cost: 25000, unlock: 'coins' },
-  // recompensas do programa de indicação (Player 2)
-  recruiter: {
-    id: 'recruiter',
-    label: 'Recruiter',
-    cost: 0,
-    unlock: 'referral',
-    refCountRequired: 3,
-  },
-  legend: {
-    id: 'legend',
-    label: 'Legend',
-    cost: 0,
-    unlock: 'referral',
-    refCountRequired: 10,
-  },
+  green: { id: 'green', label: 'Green Chip', cost: 300, unlock: 'coins' },
+  cyber: { id: 'cyber', label: 'Cyber', cost: 1200, unlock: 'coins' },
+  crt: { id: 'crt', label: 'CRT', cost: 4000, unlock: 'coins' },
+  legend: { id: 'legend', label: 'The Legend', cost: 20000, unlock: 'coins' },
 };
 
 // ---------- Programa de indicação (Player 2) ----------

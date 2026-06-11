@@ -14,9 +14,6 @@ export async function skinRoutes(app) {
     if (action === 'buy') {
       if (owned.includes(skinId)) return reply.code(400).send({ error: 'skin já possuída' });
 
-      if (skin.unlock === 'referral' && player.refCount < skin.refCountRequired) {
-        return reply.code(400).send({ error: 'indicações insuficientes' });
-      }
       if (skin.unlock === 'coins' && Number(player.coins) < skin.cost) {
         return reply.code(400).send({ error: 'saldo insuficiente' });
       }

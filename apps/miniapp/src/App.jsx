@@ -362,12 +362,6 @@ export default function App() {
             action = <span style={{ color: 'var(--blue)' }}>USANDO</span>;
           } else if (owned) {
             action = <span style={{ color: 'var(--green)' }}>EQUIPAR</span>;
-          } else if (skin.unlock === 'referral') {
-            action = (
-              <span style={{ color: 'var(--amber)' }}>
-                {state.refCount}/{skin.refCountRequired} 👥
-              </span>
-            );
           } else {
             action = <span style={{ color: 'var(--amber)' }}>₿{fmt(skin.cost)}</span>;
             progress = (
