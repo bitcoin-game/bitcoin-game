@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: bitcoin_game
+      POSTGRES_PASSWORD: bitcoin_game
+      POSTGRES_DB: bitcoin_game
+    ports:
+      - "5434:5432"
+    volumes:
+      - bitcoin_game_db:/var/lib/postgresql/data
+
+volumes:
+  bitcoin_game_db:

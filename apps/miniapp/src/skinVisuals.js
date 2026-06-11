@@ -1,0 +1,50 @@
+// Aparência (CRT arcade) de cada skin definida em shared/config.
+// Puramente visual — preço, posse e desbloqueio vêm sempre do servidor.
+export const SKIN_VISUALS = {
+  classic: {
+    rar: 'INICIAL',
+    rc: 'var(--dim)',
+    bg: 'radial-gradient(circle at 38% 32%,#ffd56b,#f7931a 60%,#c8740d)',
+    bd: '#ffe39b',
+    col: '#5a3500',
+    gly: '₿',
+    gl: 'rgba(247,147,26,.55)',
+  },
+  neon: {
+    rar: 'RARO',
+    rc: 'var(--blue)',
+    bg: 'radial-gradient(circle at 38% 32%,#bfe9fb,#2ea9e0 60%,#11597e)',
+    bd: '#d6f1fd',
+    col: '#06283a',
+    gly: '₿',
+    gl: 'rgba(46,169,224,.6)',
+  },
+  goldbar: {
+    rar: 'ÉPICO',
+    rc: 'var(--amber)',
+    bg: 'radial-gradient(circle at 38% 32%,#fff3b0,#ffc233 55%,#a06a00)',
+    bd: '#fff3b0',
+    col: '#3a2700',
+    gly: '▮',
+    gl: 'rgba(255,194,51,.6)',
+  },
+  recruiter: {
+    rar: 'INDICAÇÃO',
+    rc: 'var(--green)',
+    bg: 'radial-gradient(circle at 38% 32%,#aef5b8,#35d24a 60%,#1c7a2c)',
+    bd: '#cff7d6',
+    col: '#06340f',
+    gly: 'P2',
+    gl: 'rgba(53,210,74,.55)',
+  },
+  legend: {
+    rar: 'LENDA',
+    rc: 'var(--amber)',
+    bg: 'radial-gradient(circle at 38% 32%,#fff3b0,#f7931a 45%,#e0556a 80%)',
+    bd: '#ffe39b',
+    col: '#3a1500',
+    gly: '★',
+    gl: 'rgba(255,194,51,.75)',
+    legend: true,
+  },
+};

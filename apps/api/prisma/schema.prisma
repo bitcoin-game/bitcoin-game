@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id           BigInt   @id // telegram user id
+  username     String?
+  firstName    String?  @map("first_name")
+  coins        BigInt   @default(0)
+  total        BigInt   @default(0) // lifetime = score do leaderboard
+  perTap       Int      @default(1) @map("per_tap")
+  maxEnergy    Int      @default(500) @map("max_energy")
+  regen        Int      @default(2) @map("regen")
+  energy       Float    @default(500) @map("energy")
+  energyTs     DateTime @default(now()) @map("energy_ts")
+  multN        Int      @default(0) @map("mult_n")
+  battN        Int      @default(0) @map("batt_n")
+  chgN         Int      @default(0) @map("chg_n")
+  autoN        Int      @default(0) @map("auto_n")
+  equippedSkin String   @default("classic") @map("equipped_skin")
+  ownedSkins   Json     @default("[\"classic\"]") @map("owned_skins")
+  referredBy   BigInt?  @map("referred_by")
+  refCount     Int      @default(0) @map("ref_count")
+  lastSyncNonce String? @map("last_sync_nonce") // idempotência do /api/sync
+  lastSeen     DateTime @default(now()) @map("last_seen")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  referrer        Player?    @relation("ReferralEdge", fields: [referredBy], references: [id])
+  referredPlayers Player[]   @relation("ReferralEdge")
+  referralsMade   Referral[] @relation("ReferrerReferrals")
+  referralAsReferee Referral? @relation("RefereeReferral")
+
+  @@index([total(sort: Desc)], map: "idx_players_total")
+  @@map("players")
+}
+
+model Referral {
+  id         BigInt    @id @default(autoincrement())
+  referrerId BigInt    @map("referrer_id")
+  refereeId  BigInt    @unique @map("referee_id")
+  status     String    @default("pending") // pending | rewarded
+  createdAt  DateTime  @default(now()) @map("created_at")
+  rewardedAt DateTime? @map("rewarded_at")
+
+  referrer Player @relation("ReferrerReferrals", fields: [referrerId], references: [id])
+  referee  Player @relation("RefereeReferral", fields: [refereeId], references: [id])
+
+  @@map("referrals")
+}
