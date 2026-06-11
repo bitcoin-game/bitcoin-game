@@ -54,13 +54,21 @@ export function useGameState() {
     return () => clearInterval(id);
   }, [flushSync]);
 
-  // regen de energia local (mesma fórmula do servidor); o /sync corrige
-  // qualquer deriva a cada ciclo
+  // regen de energia + renda passiva do AUTO, em espelho local (mesma
+  // fórmula do servidor); o /sync corrige qualquer deriva a cada ciclo
   useEffect(() => {
     const id = setInterval(() => {
       setState((prev) => {
-        if (!prev || prev.energy >= prev.maxEnergy) return prev;
-        return { ...prev, energy: Math.min(prev.maxEnergy, prev.energy + prev.regen) };
+        if (!prev) return prev;
+        const energy = Math.min(prev.maxEnergy, prev.energy + prev.regen);
+        const idle = prev.autoN;
+        if (energy === prev.energy && idle === 0) return prev;
+        return {
+          ...prev,
+          energy,
+          coins: prev.coins + idle,
+          total: prev.total + idle,
+        };
       });
     }, 1000);
     return () => clearInterval(id);

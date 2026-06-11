@@ -1,4 +1,4 @@
-import { MAX_TAPS_PER_SYNC, TAP_RATE_ANOMALY_PER_S } from 'shared';
+import { MAX_TAPS_PER_SYNC, TAP_RATE_ANOMALY_PER_S, statsFromLevels } from 'shared';
 
 // Núcleo do anti-cheat: recalcula energia pelo relógio do servidor, trava os
 // toques reclamados ao teto fisicamente possível e credita as moedas que o
@@ -18,7 +18,11 @@ export function applySync(player, claimedTaps, now = Date.now()) {
   taps = Math.max(0, Math.min(taps, Math.floor(energy), MAX_TAPS_PER_SYNC));
 
   energy -= taps;
-  const earned = taps * player.perTap;
+
+  const { autoRate } = statsFromLevels(player);
+  const idleEarned = Math.floor(elapsedS * autoRate);
+
+  const earned = taps * player.perTap + idleEarned;
 
   return {
     earned,
