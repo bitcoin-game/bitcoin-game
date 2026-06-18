@@ -66,3 +66,90 @@ pula completamente a verificação HMAC do Telegram).
   leaderboard são in-memory, ok apenas para 1 instância).
 - **Passe final de hardening anti-cheat** (revisão de limites, anomalias de
   taps, edge cases de sync).
+
+---
+
+## Deploy manual (Railway)
+
+> O código está pronto para deploy single-origin: a API serve o build do
+> frontend via `@fastify/static` na mesma porta/domínio. Os passos abaixo
+> são os que você executa manualmente — o código e o Dockerfile já estão
+> configurados.
+
+### 1. Criar projeto e conectar repo
+
+1. **railway.app → New Project → Deploy from GitHub repo** → selecione este
+   repositório.
+2. Railway detecta o `Dockerfile` automaticamente (builder configurado em
+   `railway.toml`).
+
+### 2. Provisionar Postgres
+
+1. No painel do projeto → **Add Service → Database → PostgreSQL**.
+2. Copie a `DATABASE_URL` gerada (aba **Variables** do serviço Postgres).
+
+### 3. Variáveis de ambiente
+
+Configure no serviço da **API** (não no Postgres). Veja também
+`.env.production.example` na raiz do repo.
+
+| Variável | Obrigatória | Descrição |
+|---|:---:|---|
+| `DATABASE_URL` | ✅ | URL copiada do Postgres provisionado |
+| `BOT_TOKEN` | ✅ | Token gerado pelo @BotFather |
+| `JWT_SECRET` | ✅ | String aleatória longa — gere com `openssl rand -hex 64` |
+| `NODE_ENV` | ✅ | `production` |
+| `PORT` | — | Railway injeta automaticamente; padrão `3000` |
+| `JWT_EXPIRES_IN` | — | Duração do JWT de sessão; padrão `1h` |
+| `OFFLINE_CAP_S` | — | Teto de idle offline em segundos; padrão `3600` |
+
+> **Atenção:** `ALLOW_DEV_AUTH` **jamais** deve ser definida em produção.
+> O servidor recusa o boot com `process.exit(1)` se detectar
+> `NODE_ENV=production` + `ALLOW_DEV_AUTH=true`.
+
+### 4. Deploy
+
+Após o push para `main` o Railway faz o build via Dockerfile:
+
+1. `npm ci` — instala dependências
+2. `npm run build --workspace=apps/miniapp` — gera `apps/miniapp/dist`
+3. `npm run prisma:generate` — gera o Prisma Client
+4. Na inicialização: `prisma migrate deploy` — aplica migrations pendentes
+5. `node apps/api/src/server.js` — sobe a API servindo o estático
+
+Verifique o healthcheck em `https://<domínio>/api/leaderboard`.
+
+### 5. Configurar o bot no BotFather
+
+Execute os comandos abaixo no chat com **@BotFather** no Telegram:
+
+```
+/newbot
+  → escolha nome e @username para o bot
+  → guarde o token gerado → BOT_TOKEN
+
+/newapp
+  → selecione o bot criado
+  → título: Bitcoin Game
+  → descrição: Tap, mine & upgrade
+  → foto: imagem 640×360 px (obrigatória)
+  → URL do Web App: https://<domínio-railway>/
+  → nome curto (slug): game
+
+/setmenubutton
+  → selecione o bot
+  → tipo: Web App
+  → URL: https://<domínio-railway>/
+```
+
+**Link direto para abrir o app:**
+```
+https://t.me/<@username>/<slug>
+```
+Exemplo: `https://t.me/BitcoinGameBot/game`
+
+**Deep link de indicação** (parâmetro `start_param` lido em `/api/session`):
+```
+https://t.me/<@username>/<slug>?startapp=ref_<id-do-jogador>
+```
+Exemplo: `https://t.me/BitcoinGameBot/game?startapp=ref_42`

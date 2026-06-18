@@ -1,5 +1,9 @@
 import 'dotenv/config';
+import { existsSync } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import Fastify from 'fastify';
+import fastifyStatic from '@fastify/static';
 import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
 import { getPlayer } from './db/queries.js';
@@ -10,12 +14,16 @@ import { skinRoutes } from './routes/skin.js';
 import { bossRoutes } from './routes/boss.js';
 import { leaderboardRoutes } from './routes/leaderboard.js';
 
+if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DEV_AUTH === 'true') {
+  console.error('FATAL: ALLOW_DEV_AUTH=true is forbidden in production');
+  process.exit(1);
+}
+
 const app = Fastify({ logger: true });
 
 await app.register(jwt, { secret: process.env.JWT_SECRET });
 await app.register(rateLimit, { global: false });
 
-// Decorator de autenticação: valida o JWT de sessão e carrega o player do DB.
 app.decorate('authenticate', async (request, reply) => {
   try {
     await request.jwtVerify();
@@ -34,6 +42,21 @@ await app.register(upgradeRoutes, { prefix: '/api' });
 await app.register(skinRoutes, { prefix: '/api' });
 await app.register(bossRoutes, { prefix: '/api' });
 await app.register(leaderboardRoutes, { prefix: '/api' });
+
+// Serve frontend build from the same origin (production only)
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const distPath = path.join(__dirname, '..', '..', '..', 'apps', 'miniapp', 'dist');
+
+if (existsSync(distPath)) {
+  await app.register(fastifyStatic, { root: distPath, prefix: '/' });
+  app.setNotFoundHandler((req, reply) => {
+    if (req.url.startsWith('/api')) {
+      reply.code(404).send({ error: 'not found' });
+    } else {
+      reply.sendFile('index.html');
+    }
+  });
+}
 
 const port = Number(process.env.PORT) || 3000;
 app.listen({ port, host: '0.0.0.0' }).catch((err) => {

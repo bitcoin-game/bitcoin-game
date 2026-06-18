@@ -9,6 +9,8 @@
   "scripts": {
     "dev:api": "npm run dev --workspace=apps/api",
     "dev:miniapp": "npm run dev --workspace=apps/miniapp",
+    "build": "npm run build --workspace=apps/miniapp && npm run prisma:generate",
+    "start": "npm run start:prod --workspace=apps/api",
     "prisma:generate": "npm run prisma:generate --workspace=apps/api",
     "prisma:migrate": "npm run prisma:migrate --workspace=apps/api",
     "db:reset-dev": "npm run db:reset-dev --workspace=apps/api"

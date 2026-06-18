@@ -1,4 +1,8 @@
-import { OFFLINE_CAP_S, statsFromLevels } from 'shared';
+import { OFFLINE_CAP_S as DEFAULT_OFFLINE_CAP_S, statsFromLevels } from 'shared';
+
+const OFFLINE_CAP_S = process.env.OFFLINE_CAP_S
+  ? Number(process.env.OFFLINE_CAP_S)
+  : DEFAULT_OFFLINE_CAP_S;
 
 // Calcula e credita o ganho de idle/offline desde o último `lastSeen`,
 // usando o relógio do servidor. Chamado em /api/session quando o jogador volta.
