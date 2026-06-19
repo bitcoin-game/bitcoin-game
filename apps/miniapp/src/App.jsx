@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { UPGRADES, SKINS, BOSS_LEVELS, upgradeCost } from 'shared';
 import { useGameState } from './hooks/useGameState.js';
 import { SKIN_VISUALS } from './skinVisuals.js';
-import { blip, isMuted, setMuted } from './sound.js';
+import { blip, playTap, unlockAudio, isMuted, setMuted } from './sound.js';
 import { getLeaderboard } from './api/client.js';
 
 const LEVEL_FIELD = { mult: 'multN', batt: 'battN', chg: 'chgN', auto: 'autoN' };
@@ -46,6 +46,7 @@ export default function App() {
   const bossHpRef = useRef(0);
   const bossEndedRef = useRef(false);
   const bossDefRef = useRef(null);
+  const audioUnlockedRef = useRef(false);
 
   const showToast = useCallback((msg) => {
     setToastMsg(msg);
@@ -174,6 +175,10 @@ export default function App() {
   const onTap = useCallback(
     (e) => {
       if (!state) return;
+      if (!audioUnlockedRef.current) {
+        audioUnlockedRef.current = true;
+        unlockAudio();
+      }
       if (bossActive) {
         damageBoss(e);
         return;
@@ -183,7 +188,7 @@ export default function App() {
         return;
       }
       tap();
-      blip(720 + Math.random() * 60, 0.05);
+      playTap();
 
       const rect = tapRef.current.getBoundingClientRect();
       const pr = stageRef.current.getBoundingClientRect();
