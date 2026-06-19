@@ -3,14 +3,14 @@ import { UPGRADES, SKINS, BOSS_LEVELS, upgradeCost } from 'shared';
 import { useGameState } from './hooks/useGameState.js';
 import { SKIN_VISUALS } from './skinVisuals.js';
 import { blip, playTap, unlockAudio, isMuted, setMuted } from './sound.js';
+import { useLang } from './i18n.js';
 import { getLeaderboard } from './api/client.js';
 
 const LEVEL_FIELD = { mult: 'multN', batt: 'battN', chg: 'chgN', auto: 'autoN' };
 const UPGRADE_ICONS = { mult: '✖', batt: '🔋', chg: '⚡', auto: '⚒' };
-const UPGRADE_LABELS = { mult: 'MULTI', batt: 'BATERIA', chg: 'CARGA', auto: 'AUTO' };
 
 function fmt(n) {
-  return Math.floor(n).toLocaleString('pt-BR');
+  return Math.floor(n).toLocaleString('en-US');
 }
 
 function levelFromTotal(total) {
@@ -24,6 +24,7 @@ function bossDefForLevel(level) {
 
 export default function App() {
   const { state, loading, error, offlineGain, tap, upgrade, buySkin, equipSkin, fightBoss } = useGameState();
+  const { lang, setLang, t } = useLang();
 
   const [toastMsg, setToastMsg] = useState('');
   const [floats, setFloats] = useState([]);
@@ -48,6 +49,13 @@ export default function App() {
   const bossDefRef = useRef(null);
   const audioUnlockedRef = useRef(false);
 
+  const upgradeLabels = {
+    mult: t('upgMulti'),
+    batt: t('upgBattery'),
+    chg:  t('upgCharge'),
+    auto: t('upgAuto'),
+  };
+
   const showToast = useCallback((msg) => {
     setToastMsg(msg);
     clearTimeout(toastTimer.current);
@@ -60,16 +68,14 @@ export default function App() {
     setTimeout(() => setFloats((prev) => prev.filter((f) => f.id !== id)), 700);
   }, []);
 
-  // leaderboard: carrega e atualiza periodicamente
+  // leaderboard: load and refresh periodically
   useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
         const data = await getLeaderboard();
         if (!cancelled) setLeaderboard(data.leaderboard);
-      } catch {
-        // ignora falha de leaderboard, não é crítico
-      }
+      } catch {}
     }
     load();
     const id = setInterval(load, 15000);
@@ -79,13 +85,13 @@ export default function App() {
     };
   }, []);
 
-  // conquistas e level-up (cosméticos, client-side)
+  // achievements + level-up (cosmetic, client-side)
   useEffect(() => {
     if (!state) return;
 
     const lvl = levelFromTotal(state.total);
     if (prevLevelRef.current !== null && lvl > prevLevelRef.current) {
-      showToast(`LEVEL UP → LV ${lvl}`);
+      showToast(t('levelUp', lvl));
     }
     prevLevelRef.current = lvl;
 
@@ -96,12 +102,12 @@ export default function App() {
       blip(660, 0.1);
       setTimeout(() => blip(880, 0.12), 90);
     };
-    if (state.total >= 1) ach('first', 'PRIMEIRA FICHA');
-    if (state.total >= 100) ach('c100', 'CEM MOEDAS');
-    if (state.total >= 1000) ach('c1k', 'MIL MOEDAS — VOCÊ É PLAYER');
-  }, [state?.total, showToast]);
+    if (state.total >= 1)    ach('first', t('firstCoin'));
+    if (state.total >= 100)  ach('c100',  t('hundredCoins'));
+    if (state.total >= 1000) ach('c1k',   t('thousandCoins'));
+  }, [state?.total, showToast, t]);
 
-  // limpa o timer do boss ao desmontar
+  // clean up boss timer on unmount
   useEffect(() => () => clearInterval(bossTimerRef.current), []);
 
   const endBoss = useCallback(async () => {
@@ -115,18 +121,18 @@ export default function App() {
     try {
       const result = await fightBoss(def.level, taps);
       if (result.win) {
-        showToast(`BOSS DOWN! +${fmt(result.reward)} ₿`);
+        showToast(t('bossDown', fmt(result.reward)));
         blip(523, 0.12);
         setTimeout(() => blip(659, 0.12), 110);
         setTimeout(() => blip(784, 0.18), 220);
       } else {
-        showToast('O BOSS FUGIU… tenta de novo');
+        showToast(t('bossEscaped'));
         blip(150, 0.25, 'sawtooth');
       }
     } catch (err) {
       showToast(err.message);
     }
-  }, [fightBoss, showToast]);
+  }, [fightBoss, showToast, t]);
 
   const startBoss = useCallback(() => {
     if (!state || bossActive) return;
@@ -208,14 +214,14 @@ export default function App() {
         setTimeout(() => blip(700, 0.09), 70);
         if (!achievedRef.current.up1) {
           achievedRef.current.up1 = true;
-          showToast('PRIMEIRO UPGRADE');
+          showToast(t('firstUpgrade'));
         }
       } catch (err) {
         blip(150, 0.12, 'sawtooth');
         showToast(err.message);
       }
     },
-    [upgrade, showToast]
+    [upgrade, showToast, t]
   );
 
   const handleSkinClick = useCallback(
@@ -228,18 +234,18 @@ export default function App() {
           return;
         }
         await buySkin(skin.id);
-        showToast(`SKIN: ${skin.label.toUpperCase()}!`);
+        showToast(t('skinBought', skin.label.toUpperCase()));
         blip(520, 0.08);
         setTimeout(() => blip(740, 0.1), 80);
         if (skin.id === 'legend') {
-          showToast('VOCÊ É A LENDA');
+          showToast(t('youAreLegend'));
         }
       } catch (err) {
         blip(150, 0.12, 'sawtooth');
         showToast(err.message);
       }
     },
-    [buySkin, equipSkin, showToast]
+    [buySkin, equipSkin, showToast, t]
   );
 
   const toggleMute = useCallback(() => {
@@ -249,8 +255,8 @@ export default function App() {
     if (!next) blip(660, 0.08);
   }, [muted]);
 
-  if (loading) return <div className="app center">Carregando...</div>;
-  if (error && !state) return <div className="app center error">Erro: {error}</div>;
+  if (loading) return <div className="app center">{t('loading')}</div>;
+  if (error && !state) return <div className="app center error">{t('error')}{error}</div>;
   if (!state) return null;
 
   const equippedVisual = SKIN_VISUALS[state.equippedSkin] || SKIN_VISUALS.classic;
@@ -267,7 +273,7 @@ export default function App() {
             <span className="tk">$BitGame</span>
           </div>
           <div style={{ fontSize: 15, color: 'var(--dim)', marginTop: 4 }}>
-            Por toque: <b style={{ color: 'var(--orange)' }}>{state.perTap}</b> · Idle:{' '}
+            {t('perTap')}: <b style={{ color: 'var(--orange)' }}>{state.perTap}</b> · Idle:{' '}
             <b style={{ color: 'var(--green)' }}>{state.autoN}</b>/s
           </div>
         </div>
@@ -279,12 +285,24 @@ export default function App() {
           <button id="mute" className="pixel" onClick={toggleMute}>
             {muted ? '🔇' : '🔊'}
           </button>
+          {' '}
+          <button
+            className="pixel lang-btn"
+            style={{ opacity: lang === 'en' ? 1 : 0.4 }}
+            onClick={() => setLang('en')}
+          >EN</button>
+          {' '}
+          <button
+            className="pixel lang-btn"
+            style={{ opacity: lang === 'pt' ? 1 : 0.4 }}
+            onClick={() => setLang('pt')}
+          >PT</button>
         </div>
       </div>
 
       <div className="energy">
         <div className="lab">
-          <span>ENERGIA</span>
+          <span>{t('energy')}</span>
           <span>
             {Math.floor(state.energy)} / {state.maxEnergy}
           </span>
@@ -296,7 +314,7 @@ export default function App() {
 
       <div className="stage" ref={stageRef}>
         <div className="hint pixel">
-          {dead ? 'RECARREGANDO…' : bossActive ? 'SMASH THE BOSS! 👾' : '▶ INSERT COIN ◀'}
+          {dead ? t('recharging') : bossActive ? t('smashBoss') : '▶ INSERT COIN ◀'}
         </div>
         <div
           ref={tapRef}
@@ -346,16 +364,16 @@ export default function App() {
             >
               <div className="ic">{UPGRADE_ICONS[kind]}</div>
               <div className="meta">
-                <div className="nm pixel">{UPGRADE_LABELS[kind]}</div>
+                <div className="nm pixel">{upgradeLabels[kind]}</div>
                 <div className="lv">Lv {displayLevel}</div>
-                <div className="cost">{maxed ? 'MÁX' : `₿${fmt(cost)}`}</div>
+                <div className="cost">{maxed ? t('maxed') : `₿${fmt(cost)}`}</div>
               </div>
             </div>
           );
         })}
       </div>
 
-      <div className="lbl pixel">SKINS · SEU PLAYER</div>
+      <div className="lbl pixel">{t('skinsSection')}</div>
       <div className="skins">
         {Object.values(SKINS).map((skin) => {
           const visual = SKIN_VISUALS[skin.id];
@@ -365,9 +383,9 @@ export default function App() {
           let action;
           let progress = null;
           if (equipped) {
-            action = <span style={{ color: 'var(--blue)' }}>USANDO</span>;
+            action = <span style={{ color: 'var(--blue)' }}>{t('using')}</span>;
           } else if (owned) {
-            action = <span style={{ color: 'var(--green)' }}>EQUIPAR</span>;
+            action = <span style={{ color: 'var(--green)' }}>{t('equip')}</span>;
           } else {
             action = <span style={{ color: 'var(--amber)' }}>₿{fmt(skin.cost)}</span>;
             progress = (
@@ -391,7 +409,7 @@ export default function App() {
               </div>
               <div className="sn">{skin.label}</div>
               <div className="rar" style={{ color: visual.rc }}>
-                {visual.rar}
+                {t(visual.rar)}
               </div>
               <div className="act">{action}</div>
               {progress}
@@ -412,11 +430,11 @@ export default function App() {
       </div>
 
       <div className="foot">
-        Toque a moeda · gaste em upgrades e skins.
+        {t('footerTap')}
         <br />
-        O AUTO minera mesmo com você fora — volte e colete. 🕹️
+        {t('footerAuto')}
         <br />
-        Indique amigos pelo seu link para desbloquear skins exclusivas.
+        {t('footerRef')}
       </div>
 
       <div id="toast" className={`pixel${toastMsg ? ' on' : ''}`}>
@@ -431,9 +449,7 @@ export default function App() {
             PLAYER
           </div>
           <div className="msg">
-            Seu AUTO minerou <b>₿{fmt(offlineGain)}</b>
-            <br />
-            enquanto você esteve fora.
+            {t('offlineMined', `₿${fmt(offlineGain)}`)}
           </div>
           <button
             className="pixel"
@@ -442,7 +458,7 @@ export default function App() {
               blip(700, 0.08);
             }}
           >
-            COLETAR
+            {t('collect')}
           </button>
         </div>
       </div>

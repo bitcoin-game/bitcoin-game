@@ -2,7 +2,7 @@
 // Puramente visual — preço, posse e desbloqueio vêm sempre do servidor.
 export const SKIN_VISUALS = {
   classic: {
-    rar: 'INICIAL',
+    rar: 'STARTER',
     rc: 'var(--dim)',
     bg: 'radial-gradient(circle at 38% 32%,#ffd56b,#f7931a 60%,#c8740d)',
     bd: '#ffe39b',
@@ -11,7 +11,7 @@ export const SKIN_VISUALS = {
     gl: 'rgba(247,147,26,.55)',
   },
   green: {
-    rar: 'COMUM',
+    rar: 'COMMON',
     rc: 'var(--green)',
     bg: 'radial-gradient(circle at 38% 32%,#aef5b8,#35d24a 60%,#1c7a2c)',
     bd: '#cff7d6',
@@ -20,7 +20,7 @@ export const SKIN_VISUALS = {
     gl: 'rgba(53,210,74,.55)',
   },
   cyber: {
-    rar: 'RARO',
+    rar: 'RARE',
     rc: 'var(--blue)',
     bg: 'radial-gradient(circle at 38% 32%,#bfe9fb,#2ea9e0 60%,#11597e)',
     bd: '#d6f1fd',
@@ -29,7 +29,7 @@ export const SKIN_VISUALS = {
     gl: 'rgba(46,169,224,.6)',
   },
   crt: {
-    rar: 'RARO',
+    rar: 'RARE',
     rc: 'var(--green)',
     bg: 'radial-gradient(circle at 38% 32%,#1c3a22,#0b1d10 70%)',
     bd: '#35d24a',
@@ -38,7 +38,7 @@ export const SKIN_VISUALS = {
     gl: 'rgba(53,210,74,.7)',
   },
   legend: {
-    rar: 'LENDA',
+    rar: 'LEGEND',
     rc: 'var(--amber)',
     bg: 'radial-gradient(circle at 38% 32%,#fff3b0,#f7931a 45%,#e0556a 80%)',
     bd: '#ffe39b',
