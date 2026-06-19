@@ -6,13 +6,17 @@ const getCtx = () => (audioCtx ??= new (window.AudioContext || window.webkitAudi
 export function setMuted(value) { muted = value; }
 export function isMuted() { return muted; }
 
-export async function unlockAudio() {
+export function unlockAudio() {
   const ctx = getCtx();
-  if (ctx.state === 'suspended') await ctx.resume();
+  // Iniciar o nó ANTES de resume() — iOS exige que o audio node seja
+  // criado e iniciado sincronamente dentro do handler do gesto do usuário.
+  // ctx.resume() é async mas não precisa ser aguardado: o nó toca assim
+  // que o contexto transita para "running".
   const src = ctx.createBufferSource();
   src.buffer = ctx.createBuffer(1, 1, 22050);
   src.connect(ctx.destination);
   src.start(0);
+  if (ctx.state === 'suspended') ctx.resume();
 }
 
 export function playTap() {

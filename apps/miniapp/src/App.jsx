@@ -175,6 +175,7 @@ export default function App() {
   const onTap = useCallback(
     (e) => {
       if (!state) return;
+      window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('light');
       if (!audioUnlockedRef.current) {
         audioUnlockedRef.current = true;
         unlockAudio();
