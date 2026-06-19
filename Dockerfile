@@ -1,6 +1,9 @@
 FROM node:22-slim
 WORKDIR /app
 
+# Prisma schema engine requires OpenSSL at runtime (not included in slim)
+RUN apt-get update -y && apt-get install -y openssl --no-install-recommends && rm -rf /var/lib/apt/lists/*
+
 # Copy workspace manifests before source to cache the install layer
 COPY package.json package-lock.json ./
 COPY apps/api/package.json apps/api/

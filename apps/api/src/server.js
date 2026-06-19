@@ -36,6 +36,8 @@ app.decorate('authenticate', async (request, reply) => {
   request.player = player;
 });
 
+app.get('/health', async () => ({ ok: true }));
+
 await app.register(sessionRoutes, { prefix: '/api' });
 await app.register(syncRoutes, { prefix: '/api' });
 await app.register(upgradeRoutes, { prefix: '/api' });
