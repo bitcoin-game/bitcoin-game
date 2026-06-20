@@ -106,9 +106,9 @@ export function useGameState() {
     setState(data.state);
   }, []);
 
-  const fightBoss = useCallback(async (level, taps) => {
+  const fightBoss = useCallback(async (level, taps, difficulty = 'easy') => {
     await flushSync();
-    const data = await resolveBoss(level, taps);
+    const data = await resolveBoss(level, taps, difficulty);
     setState(data.state);
     return data;
   }, [flushSync]);

@@ -39,8 +39,8 @@ export function skinAction(action, skinId) {
   return request('/skin', { method: 'POST', body: { action, skinId } });
 }
 
-export function resolveBoss(level, taps) {
-  return request('/boss/resolve', { method: 'POST', body: { level, taps } });
+export function resolveBoss(level, taps, difficulty = 'easy') {
+  return request('/boss/resolve', { method: 'POST', body: { level, taps, difficulty } });
 }
 
 export function getLeaderboard() {
