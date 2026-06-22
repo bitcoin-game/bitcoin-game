@@ -113,3 +113,34 @@ export function bossMaxTaps(level) {
   if (!def) throw new Error(`boss level desconhecido: ${level}`);
   return Math.floor(def.timeLimitS * def.maxTapRateS);
 }
+
+// ---------- Boss: dificuldade (Easy/Hard) ----------
+// Easy = comportamento original (BOSS_LEVELS intacto). Hard = mesmo boss com
+// HP escalado e prêmio de risco. O teto de toques (maxTapRateS/timeLimitS) NÃO
+// muda, então mais HP exige proporcionalmente mais per_tap p/ vencer no tempo —
+// é aí que mora o downside real (quem mal vence o Easy perde o Hard).
+export const BOSS_DIFFICULTIES = ['easy', 'hard'];
+export const BOSS_HARD = {
+  hpMult: 2.5, // boss mais difícil
+  rewardMult: 3, // prêmio de risco
+};
+export const BOSS_HARD_MIN_TOTAL = 3000; // gate de endgame (≈ LV5); abaixo disso o Hard é negado
+export const BOSS_HARD_COOLDOWN_S = 300; // 5 min entre tentativas Hard (anti-farm)
+
+export function bossHardUnlocked(total) {
+  return Number(total) >= BOSS_HARD_MIN_TOTAL;
+}
+
+// Definição efetiva do boss p/ uma dificuldade. easy devolve a base sem tocar.
+export function bossDef(level, difficulty = 'easy') {
+  const base = BOSS_LEVELS.find((b) => b.level === level);
+  if (!base) throw new Error(`boss level desconhecido: ${level}`);
+  if (difficulty === 'hard') {
+    return {
+      ...base,
+      hp: Math.round(base.hp * BOSS_HARD.hpMult),
+      reward: Math.round(base.reward * BOSS_HARD.rewardMult),
+    };
+  }
+  return base;
+}

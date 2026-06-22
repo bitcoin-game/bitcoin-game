@@ -60,6 +60,13 @@ body::after{content:"";position:fixed;inset:0;z-index:49;pointer-events:none;
 .bossbtn{margin:6px auto 0;background:rgba(224,85,106,.12);border:2px solid var(--red);color:var(--red);
   font-family:'Press Start 2P',monospace;font-size:11px;padding:10px 14px;cursor:pointer;text-shadow:0 0 8px rgba(224,85,106,.6)}
 .bossbtn:disabled{opacity:.4;cursor:default}
+.bossdiff{display:flex;gap:8px;justify-content:center;margin:8px auto 0}
+.bossdiff .diff{font-family:'Press Start 2P',monospace;font-size:9px;padding:8px 12px;cursor:pointer;
+  background:transparent;border:2px solid var(--dim);color:var(--dim)}
+.bossdiff .diff.on{border-color:var(--orange);color:var(--orange);text-shadow:0 0 8px rgba(247,147,26,.6)}
+.bossdiff .diff.hard.on{border-color:var(--red);color:var(--red);text-shadow:0 0 8px rgba(224,85,106,.6)}
+.bossdiff .diff:disabled{opacity:.4;cursor:default}
+.bossreq{text-align:center;font-size:8px;color:var(--dim);min-height:12px;margin-top:4px}
 .bosswrap{display:none;width:100%;margin-top:10px;border:2px solid var(--red);padding:10px 12px;background:rgba(224,85,106,.08)}
 .bosswrap.on{display:block}
 .bosswrap .top{display:flex;justify-content:space-between;font-size:15px;color:var(--red);margin-bottom:5px}

@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { UPGRADES, SKINS, BOSS_LEVELS, upgradeCost } from 'shared';
+import {
+  UPGRADES,
+  SKINS,
+  BOSS_LEVELS,
+  upgradeCost,
+  bossDef as bossDefFor,
+  bossHardUnlocked,
+  BOSS_HARD_MIN_TOTAL,
+} from 'shared';
 import { useGameState } from './hooks/useGameState.js';
 import { SKIN_VISUALS } from './skinVisuals.js';
 import { blip, playTap, unlockAudio, isMuted, setMuted } from './sound.js';
@@ -17,11 +25,6 @@ function levelFromTotal(total) {
   return 1 + Math.floor(total / 750);
 }
 
-function bossDefForLevel(level) {
-  const idx = Math.min(BOSS_LEVELS.length, level) - 1;
-  return BOSS_LEVELS[idx];
-}
-
 export default function App() {
   const { state, loading, error, offlineGain, tap, upgrade, buySkin, equipSkin, fightBoss } = useGameState();
   const { lang, setLang, t } = useLang();
@@ -36,6 +39,7 @@ export default function App() {
   const [bossHpVal, setBossHpVal] = useState(0);
   const [bossHpMax, setBossHpMax] = useState(0);
   const [bossLeft, setBossLeft] = useState(0);
+  const [difficulty, setDifficulty] = useState('easy');
 
   const stageRef = useRef(null);
   const tapRef = useRef(null);
@@ -47,6 +51,7 @@ export default function App() {
   const bossHpRef = useRef(0);
   const bossEndedRef = useRef(false);
   const bossDefRef = useRef(null);
+  const bossDiffRef = useRef('easy');
   const audioUnlockedRef = useRef(false);
 
   const upgradeLabels = {
@@ -119,7 +124,7 @@ export default function App() {
     const def = bossDefRef.current;
     const taps = bossTapsRef.current;
     try {
-      const result = await fightBoss(def.level, taps);
+      const result = await fightBoss(def.level, taps, bossDiffRef.current);
       if (result.win) {
         showToast(t('bossDown', fmt(result.reward)));
         blip(523, 0.12);
@@ -130,13 +135,22 @@ export default function App() {
         blip(150, 0.25, 'sawtooth');
       }
     } catch (err) {
-      showToast(err.message);
+      // mapeia o gate do servidor (Hard) p/ mensagens localizadas
+      const key =
+        err.message === 'boss_hard_cooldown' ? 'bossCooldown'
+        : err.message === 'boss_hard_locked' ? 'bossLocked'
+        : null;
+      showToast(key ? t(key) : err.message);
     }
   }, [fightBoss, showToast, t]);
 
   const startBoss = useCallback(() => {
     if (!state || bossActive) return;
-    const def = bossDefForLevel(levelFromTotal(state.total));
+    // Hard só vale pós-gate; se travado, cai pro Easy (o servidor reforça isso de toda forma).
+    const diff = difficulty === 'hard' && bossHardUnlocked(state.total) ? 'hard' : 'easy';
+    const lvl = Math.min(BOSS_LEVELS.length, levelFromTotal(state.total));
+    const def = bossDefFor(lvl, diff);
+    bossDiffRef.current = diff;
     bossDefRef.current = def;
     bossHpRef.current = def.hp;
     bossTapsRef.current = 0;
@@ -158,7 +172,7 @@ export default function App() {
         return next;
       });
     }, 100);
-  }, [state, bossActive, endBoss]);
+  }, [state, bossActive, difficulty, endBoss]);
 
   const damageBoss = useCallback(
     (e) => {
@@ -261,7 +275,9 @@ export default function App() {
 
   const equippedVisual = SKIN_VISUALS[state.equippedSkin] || SKIN_VISUALS.classic;
   const dead = state.energy < 1 && !bossActive;
-  const bossDef = bossDefForLevel(levelFromTotal(state.total));
+  const hardUnlocked = bossHardUnlocked(state.total);
+  const effDiff = difficulty === 'hard' && hardUnlocked ? 'hard' : 'easy';
+  const bossDef = bossDefFor(Math.min(BOSS_LEVELS.length, levelFromTotal(state.total)), effDiff);
 
   return (
     <div className="app">
@@ -334,6 +350,30 @@ export default function App() {
             {f.text}
           </div>
         ))}
+        <div className="bossdiff">
+          <button
+            className={`pixel diff${effDiff === 'easy' ? ' on' : ''}`}
+            disabled={bossActive}
+            onClick={() => setDifficulty('easy')}
+          >
+            {t('bossEasy')}
+          </button>
+          <button
+            className={`pixel diff hard${effDiff === 'hard' ? ' on' : ''}`}
+            disabled={bossActive || !hardUnlocked}
+            onClick={() => hardUnlocked && setDifficulty('hard')}
+            title={hardUnlocked ? t('bossHardLoot') : t('bossHardReq', fmt(BOSS_HARD_MIN_TOTAL))}
+          >
+            {hardUnlocked ? t('bossHard') : `🔒 ${t('bossHard')}`}
+          </button>
+        </div>
+        <div className="bossreq pixel">
+          {!hardUnlocked
+            ? t('bossHardReq', fmt(BOSS_HARD_MIN_TOTAL))
+            : effDiff === 'hard'
+            ? t('bossHardLoot')
+            : ''}
+        </div>
         <button className="bossbtn pixel" disabled={bossActive} onClick={startBoss}>
           ⚔ BOSS FIGHT
         </button>
