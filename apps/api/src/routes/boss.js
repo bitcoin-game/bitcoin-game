@@ -38,7 +38,7 @@ export async function bossRoutes(app) {
     }
 
     const def = bossDef(level, difficulty);
-    const maxTaps = bossMaxTaps(level); // teto de toques no tempo do boss (igual p/ Easy e Hard)
+    const maxTaps = bossMaxTaps(level, difficulty); // teto de toques CIENTE da dificuldade: o hard usa o timeLimitS escalado, senão o HP inflado vira invencível
     const validTaps = Math.max(0, Math.min(Math.floor(Number(taps) || 0), maxTaps));
 
     const dmgPerTap = bossDamagePerTap(player);

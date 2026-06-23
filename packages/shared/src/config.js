@@ -108,9 +108,12 @@ export function bossDamagePerTap(player) {
   return statsFromLevels(player).perTap;
 }
 
-export function bossMaxTaps(level) {
-  const def = BOSS_LEVELS.find((b) => b.level === level);
-  if (!def) throw new Error(`boss level desconhecido: ${level}`);
+// Teto físico de toques no tempo do boss. CIENTE DA DIFICULDADE: o hard usa o
+// timeLimitS escalado de bossDef, então o clamp do servidor acompanha o HP
+// inflado e a vitória legítima continua alcançável. Easy é byte-idêntico ao
+// comportamento anterior (bossDef('easy') devolve a base sem tocar).
+export function bossMaxTaps(level, difficulty = 'easy') {
+  const def = bossDef(level, difficulty);
   return Math.floor(def.timeLimitS * def.maxTapRateS);
 }
 
@@ -121,8 +124,12 @@ export function bossMaxTaps(level) {
 // é aí que mora o downside real (quem mal vence o Easy perde o Hard).
 export const BOSS_DIFFICULTIES = ['easy', 'hard'];
 export const BOSS_HARD = {
-  hpMult: 2.5, // boss mais difícil
+  hpMult: 2.0, // boss mais difícil
   rewardMult: 3, // prêmio de risco
+  // O hard ganha mais tempo (logo, mais teto de toques) junto com o HP. Sem
+  // isso, o HP inflado fica inalcançável dentro do clamp físico de toques e o
+  // cliente "vence" na tela enquanto o servidor calcula win:false.
+  timeMult: 1.25,
 };
 export const BOSS_HARD_MIN_TOTAL = 3000; // gate de endgame (≈ LV5); abaixo disso o Hard é negado
 export const BOSS_HARD_COOLDOWN_S = 300; // 5 min entre tentativas Hard (anti-farm)
@@ -140,6 +147,7 @@ export function bossDef(level, difficulty = 'easy') {
       ...base,
       hp: Math.round(base.hp * BOSS_HARD.hpMult),
       reward: Math.round(base.reward * BOSS_HARD.rewardMult),
+      timeLimitS: Math.round(base.timeLimitS * BOSS_HARD.timeMult),
     };
   }
   return base;
